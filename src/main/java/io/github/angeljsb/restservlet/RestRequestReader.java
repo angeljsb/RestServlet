@@ -170,7 +170,7 @@ public class RestRequestReader {
     private void comproveKey(String key) {
         if(!this.parameterMap.containsKey(key)){
             throw new RestException(HttpServletResponse.SC_BAD_REQUEST, 
-                    "Parameter " + key + " doesn't exists");
+                    "Parameter " + key + " is obligatory");
         }
     }
     

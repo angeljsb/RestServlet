@@ -8,8 +8,6 @@ package io.github.angeljsb.restservlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -205,7 +203,10 @@ public class RestResponseWriter {
                         + "un recurso que no puede ser interpretado como"
                         + "json: " + jsonStr);
             }
-        }else {
+        }else if(body instanceof Collection) {
+            Collection coll = (Collection) body;
+            jsonBody = new JSONArray(coll);
+        } else {
             jsonBody = new JSONObject(body);
         }
         

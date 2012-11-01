@@ -127,7 +127,7 @@ public abstract class RestServlet extends HttpServlet {
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
      */
-    protected Object processGet(RestRequestReader requestReader, RestResponseWriter responseWriter) {
+    protected Object processGet(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
     }
     
@@ -147,7 +147,7 @@ public abstract class RestServlet extends HttpServlet {
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
      */
-    protected Object processPost(RestRequestReader requestReader, RestResponseWriter responseWriter) {
+    protected Object processPost(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
     }
     
@@ -167,7 +167,7 @@ public abstract class RestServlet extends HttpServlet {
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
      */
-    protected Object processPut(RestRequestReader requestReader, RestResponseWriter responseWriter) {
+    protected Object processPut(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
     }
     
@@ -187,7 +187,7 @@ public abstract class RestServlet extends HttpServlet {
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
      */
-    protected Object processDelete(RestRequestReader requestReader, RestResponseWriter responseWriter) {
+    protected Object processDelete(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
     }
     
@@ -240,8 +240,10 @@ public abstract class RestServlet extends HttpServlet {
             writer.send("{\"message\":\"There is no content to show\"}");
             
         }catch(RestException ex) {
+            ex.printStackTrace(System.err);
             writer.sendError(ex);
         }catch(Exception ex) {
+            ex.printStackTrace(System.err);
             writer.sendError(new RestException(400, ex.getMessage()));
         }
     }
