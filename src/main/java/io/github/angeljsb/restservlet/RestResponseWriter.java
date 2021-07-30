@@ -13,6 +13,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
+ * Objeto para simplificar la escritura de objetos en formato json y
+ * su envio a traves de la HttpResponse.
+ * <p>
+ * Se puede obtener el objeto 
+ * {@link javax.servlet.http.HttpServletResponse HttpServletResponse} 
+ * normal del servlet por medio del método
+ * {@link #getHttpServletResponse()}
+ * </p>
  *
  * @author Angel
  */
@@ -131,14 +139,31 @@ public class RestResponseWriter {
     
     private HttpServletResponse httpServletResponse;
     
+    /**
+     * Crea un objeto RestResponseWriter para una response de un servlet
+     * 
+     * @param response La response http a la que se quiere enviar la información
+     */
     public RestResponseWriter(HttpServletResponse response) {
         this.httpServletResponse = response;
     }
     
+    /**
+     * Obtiene la response a la que este Writer envía la información
+     * 
+     * @return La response asociada
+     */
     public HttpServletResponse getHttpServletResponse() {
         return httpServletResponse;
     }
     
+    /**
+     * Reinicia la response y envía el error pasado como un json, cambiando
+     * el status de la petición al que declara el error
+     * 
+     * @param ex El error que provoca este envío, el cual debe especificar el
+     * codigo de status http
+     */
     public void sendError(RestException ex) {
         RestResponseBody body = createRestResponse(ex.getStatusCode(), ex.getMessage());
         this.httpServletResponse.reset();
@@ -146,6 +171,12 @@ public class RestResponseWriter {
         this.send(body);
     }
     
+    /**
+     * Convierte un objeto (java bean o arreglo de java beans) a formato json
+     * y lo envía como contenido de la respuesta
+     * 
+     * @param body El objeto que se desea enviar
+     */
     public void send(Object body) {
         Object jsonBody = body.getClass().isArray() 
                 ? new JSONArray(body)
