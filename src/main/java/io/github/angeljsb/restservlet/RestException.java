@@ -7,7 +7,7 @@ package io.github.angeljsb.restservlet;
 
 /**
  * Error que maneja un codigo de error para repostar errores de http
- * y manejarlos
+ * y enviarlos en las responses
  *
  * @author Angel
  */
