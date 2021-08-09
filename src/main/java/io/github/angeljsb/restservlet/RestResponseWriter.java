@@ -172,15 +172,38 @@ public class RestResponseWriter {
     }
     
     /**
-     * Convierte un objeto (java bean o arreglo de java beans) a formato json
-     * y lo envía como contenido de la respuesta
+     * Convierte un objeto a formato json y lo envía como contenido de 
+     * la respuesta. Si el objeto es un JSONObject o un JSONArray
+     * lo envia tal y como está. Sino, será interpretado a formato
+     * JSON tomando en cuenta lo siguiente:
+     * <ul>
+     * <li>Si es un array: Se pasa al constructor de {@link org.json.JSONArray#JSONArray(java.lang.Object) }</li>
+     * <li>Si es un String: Se pasa al constructor {@link org.json.JSONObject#JSONObject(java.lang.Object) }</li>
+     * <li>Si no es ninguno de los anteriores, se pasa a {@link org.json.JSONObject#JSONObject(java.lang.String) }</li>
+     * </ul>
      * 
      * @param body El objeto que se desea enviar
      */
     public void send(Object body) {
-        Object jsonBody = body.getClass().isArray() 
-                ? new JSONArray(body)
-                : new JSONObject(body);
+        Object jsonBody;
+        if(body instanceof JSONObject || body instanceof JSONArray) {
+            jsonBody = body;
+        } else if(body.getClass().isArray()) {
+            jsonBody = new JSONArray(body);
+        }else if(body instanceof String) {
+            String jsonStr = (String)body;
+            if(jsonStr.startsWith("[")){
+                jsonBody = new JSONArray(jsonStr);
+            }else if(jsonStr.startsWith("{")){
+                jsonBody = new JSONObject();
+            }else {
+                throw new IllegalArgumentException("Se intentó enviar "
+                        + "un recurso que no puede ser interpretado como"
+                        + "json: " + jsonStr);
+            }
+        }else {
+            jsonBody = new JSONObject(body);
+        }
         
         this.getHttpServletResponse().setContentType(MediaType.APPLICATION_JSON);
         this.getHttpServletResponse().setCharacterEncoding("UTF-8");
