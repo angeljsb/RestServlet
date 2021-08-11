@@ -7,6 +7,10 @@ package io.github.angeljsb.restservlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import org.json.JSONArray;
@@ -153,7 +157,7 @@ public class RestResponseWriter {
      * 
      * @return La response asociada
      */
-    public HttpServletResponse getHttpServletResponse() {
+    public HttpServletResponse getResponse() {
         return httpServletResponse;
     }
     
@@ -205,13 +209,45 @@ public class RestResponseWriter {
             jsonBody = new JSONObject(body);
         }
         
-        this.getHttpServletResponse().setContentType(MediaType.APPLICATION_JSON);
-        this.getHttpServletResponse().setCharacterEncoding("UTF-8");
-        try(PrintWriter out = this.getHttpServletResponse().getWriter()){
+        this.getResponse().setContentType(MediaType.APPLICATION_JSON);
+        this.getResponse().setCharacterEncoding("UTF-8");
+        try(PrintWriter out = this.getResponse().getWriter()){
             out.print(jsonBody);
         }catch (IOException e){
             throw new RestException(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
+    }
+    
+    public void sendRedirect(String path) {
+        try {
+            this.httpServletResponse.sendRedirect(path);
+        } catch (IOException ex) {
+            throw new RestException(500, ex.getMessage());
+        }
+    }
+    
+    public void addHeader(String name, String value) {
+        this.httpServletResponse.addHeader(name, value);
+    }
+    
+    public void setHeader(String name, String value) {
+        this.httpServletResponse.setHeader(name, value);
+    }
+    
+    public String getHeader(String name) {
+        return this.httpServletResponse.getHeader(name);
+    }
+    
+    public Collection<String> getHeaders(String name) {
+        return this.httpServletResponse.getHeaders(name);
+    }
+    
+    public Collection<String> getHeaderNames() {
+        return this.httpServletResponse.getHeaderNames();
+    }
+    
+    public void addCookie(Cookie cookie) {
+        this.httpServletResponse.addCookie(cookie);
     }
     
 }

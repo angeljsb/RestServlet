@@ -54,7 +54,7 @@ public abstract class RestServlet extends HttpServlet {
     
     private void getUrlParameters(RestRequestReader requestReader) {
         WithPathParameters ann = this.getClass().getAnnotation(WithPathParameters.class);
-        String pathInfo = requestReader.getHttpServletRequest().getPathInfo();
+        String pathInfo = requestReader.getRequest().getPathInfo();
         if(ann == null || pathInfo == null) {
             return;
         }
@@ -200,7 +200,7 @@ public abstract class RestServlet extends HttpServlet {
 
             Object result = null;
 
-            switch(reader.getHttpServletRequest().getMethod().toUpperCase()) {
+            switch(reader.getMethod().toUpperCase()) {
                 case "GET":
                     result = this.processGet(reader, writer);
                     break;
@@ -216,6 +216,10 @@ public abstract class RestServlet extends HttpServlet {
                 default:
                     break;
             }
+            
+            if(writer.getResponse().isCommitted()) {
+                return;
+            }
 
             if(result != null) {
                 writer.send(result);
@@ -224,13 +228,16 @@ public abstract class RestServlet extends HttpServlet {
 
             result = processRequest(reader, writer);
             
+            if(writer.getResponse().isCommitted()) {
+                return;
+            }
+            
             if(result != null) {
                 writer.send(result);
                 return;
             }
             
-            throw new RestException(HttpServletResponse.SC_NO_CONTENT, 
-                    "No content was send by the request");
+            writer.send("{\"message\":\"There is no content to show\"}");
             
         }catch(RestException ex) {
             writer.sendError(ex);

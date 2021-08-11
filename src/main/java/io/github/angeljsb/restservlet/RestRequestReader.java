@@ -16,10 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import javax.ws.rs.core.MediaType;
 import org.json.JSONArray;
@@ -130,8 +132,26 @@ public class RestRequestReader {
      * 
      * @return La request hecha al servidor
      */
-    public HttpServletRequest getHttpServletRequest() {
+    public HttpServletRequest getRequest() {
         return httpServletRequest;
+    }
+    
+    /**
+     * Obtiene la sesión http actual o crea una si no hay
+     * 
+     * @return La sesión http para esta request
+     */
+    public HttpSession getSession() {
+        return httpServletRequest.getSession();
+    }
+    
+    /**
+     * Obtiene el ServletContext del cual la request fue despachada
+     * 
+     * @return El contexto de la aplicación
+     */
+    public ServletContext getServletContext() {
+        return httpServletRequest.getServletContext();
     }
 
     /**
@@ -550,6 +570,15 @@ public class RestRequestReader {
             }
         }
         return null;
+    }
+    
+    /**
+     * Devuelve el método de la petición
+     * 
+     * @return El método http de la petición
+     */
+    public String getMethod() {
+        return this.getRequest().getMethod();
     }
     
 }
