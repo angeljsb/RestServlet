@@ -5,14 +5,15 @@
  */
 package io.github.angeljsb.restservlet;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -43,34 +44,40 @@ public class RestRequestReader {
      * Lee todo el texto de un input stream
      * 
      * @param is El input stream a leer
+     * @param charset El character encoding de la request a leer
      * @return Todo el contenido del input stream como texto
      * @throws IOException Si un error de I/O ocurre
      * @since v1.0.0
      */
-    public static String readInputStream(InputStream is) throws IOException{
-        String res;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-            res = "";
-            String line;
-            while((line = br.readLine()) != null){
-                res += line;
+    public static String readInputStream(InputStream is, String charset) throws IOException{
+        String set = charset == null ? "UTF-8" : charset;
+        try (Reader br = new InputStreamReader(is, set)) {
+            StringBuilder sb = new StringBuilder();
+            int cp;
+            while ((cp = br.read()) != -1) {
+              sb.append((char) cp);
             }
+            return sb.toString();
         }
-        return res;
     }
     
     /**
      * Lee un json de un input stream
      * 
      * @param is El input stream a leer
+     * @param charset El character encoding de la request a leer
      * @return El contenido del input stream como un JSONOject
      * @throws IOException Si un error de I/O ocurre
      * @throws JSONException Si el contenido del input stream no es un JSON
      * @since v1.0.0
      */
-    public static JSONObject getParamsJson(InputStream is) throws IOException, JSONException{
-        String json = readInputStream(is);
-        return new JSONObject(json);
+    public static JSONObject getParamsJson(InputStream is, String charset) throws IOException, JSONException{
+        String json = readInputStream(is, charset);
+        try{
+            return new JSONObject(json);
+        } catch(JSONException ex) {
+            return new JSONObject();
+        }
     }
     
     private HttpServletRequest httpServletRequest;
@@ -102,7 +109,7 @@ public class RestRequestReader {
         
         if(content!=null && content.contains(MediaType.APPLICATION_JSON)){
             try {
-                JSONObject json = getParamsJson(request.getInputStream());
+                JSONObject json = getParamsJson(request.getInputStream(), request.getCharacterEncoding());
                 Set<String> keySet = json.keySet();
                 for(String key : keySet) {
                     this.parameterMap.put(key, json.get(key).toString());
@@ -415,7 +422,7 @@ public class RestRequestReader {
      * defecto convertido a JSONArray
      */
     public JSONArray getArray(String key, Object[] def) {
-        return getParameterOrDefault(key, new JSONArray(def), this::getArray);
+        return getParameterOrDefault(key, def == null ? null : new JSONArray(def), this::getArray);
     }
     
     /**
@@ -428,7 +435,26 @@ public class RestRequestReader {
      * defecto convertido a JSONArray
      */
     public JSONArray getArray(String key, String def) {
-        return getParameterOrDefault(key, new JSONArray(def), this::getArray);
+        return getParameterOrDefault(key, def == null ? null : new JSONArray(def), this::getArray);
+    }
+    
+    public List getList(String key) {
+        this.comproveKey(key);
+        String value = this.parameterMap.get(key);
+        return parse(value, RestRequestReader::strToColl);
+    }
+    
+    public List getList(String key, List def) {
+        return getParameterOrDefault(key, def, this::getList);
+    }
+    
+    private static List strToColl(String jsonArray) {
+        JSONArray arr = new JSONArray(jsonArray);
+        ArrayList list = new ArrayList();
+        for(int i=0; i<arr.length(); i++) {
+            list.add(arr.get(i));
+        }
+        return list;
     }
     
     /**
@@ -461,7 +487,7 @@ public class RestRequestReader {
      * defecto convertido a JSONObject
      */
     public JSONObject getJSON(String key, Object def) {
-        return getParameterOrDefault(key, new JSONObject(def), this::getJSON);
+        return getParameterOrDefault(key, def == null ? null : new JSONObject(def), this::getJSON);
     }
     
     /**
@@ -474,7 +500,7 @@ public class RestRequestReader {
      * defecto convertido a JSONObject
      */
     public JSONObject getJSON(String key, String def) {
-        return getParameterOrDefault(key, new JSONObject(def), this::getJSON);
+        return getParameterOrDefault(key, def == null ? null : new JSONObject(def), this::getJSON);
     }
     
     /**
