@@ -82,6 +82,7 @@ public class RestRequestReader {
     
     private HttpServletRequest httpServletRequest;
     private Map<String, String> parameterMap;
+    private String _METHOD;
     
     /**
      * Crea un Reader que puede obtener datos desde la request especificada
@@ -117,6 +118,14 @@ public class RestRequestReader {
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
             }
+        }
+        
+        String method = this.parameterMap.get("_METHOD");
+        if(request.getMethod().equalsIgnoreCase("POST") && method != null){
+            this._METHOD = method;
+            this.parameterMap.remove("_METHOD");
+        } else {
+            this._METHOD = null;
         }
     }
     
@@ -604,7 +613,7 @@ public class RestRequestReader {
      * @return El método http de la petición
      */
     public String getMethod() {
-        return this.getRequest().getMethod();
+        return this._METHOD == null ? this.getRequest().getMethod() : this._METHOD;
     }
     
 }
