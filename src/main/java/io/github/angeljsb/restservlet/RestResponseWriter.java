@@ -188,24 +188,26 @@ public class RestResponseWriter {
      */
     public void send(Object body) {
         Object jsonBody;
-        if(body instanceof JSONObject || body instanceof JSONArray) {
+        if(body instanceof IJsonable) {
+            jsonBody = ((IJsonable) body).toJson();
+        } else if(body instanceof JSONObject || body instanceof JSONArray) {
             jsonBody = body;
         } else if(body.getClass().isArray()) {
-            jsonBody = new JSONArray(body);
-        }else if(body instanceof String) {
+            jsonBody = JSONHelper.toJsonArray((Object[])body);
+        } else if(body instanceof String) {
             String jsonStr = (String)body;
             if(jsonStr.startsWith("[")){
                 jsonBody = new JSONArray(jsonStr);
-            }else if(jsonStr.startsWith("{")){
+            } else if(jsonStr.startsWith("{")){
                 jsonBody = new JSONObject();
             }else {
                 throw new IllegalArgumentException("Se intentó enviar "
                         + "un recurso que no puede ser interpretado como"
                         + "json: " + jsonStr);
             }
-        }else if(body instanceof Collection) {
+        } else if(body instanceof Collection) {
             Collection coll = (Collection) body;
-            jsonBody = new JSONArray(coll);
+            jsonBody = JSONHelper.toJsonArray(coll);
         } else {
             jsonBody = new JSONObject(body);
         }

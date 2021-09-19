@@ -126,6 +126,8 @@ public abstract class RestServlet extends HttpServlet {
      * @return Un objeto (java-bean) que será convertido en json y
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
+     * @throws javax.servlet.ServletException
+     * @throws java.io.IOException
      */
     protected Object processGet(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
@@ -146,6 +148,8 @@ public abstract class RestServlet extends HttpServlet {
      * @return Un objeto (java-bean) que será convertido en json y
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
+     * @throws javax.servlet.ServletException
+     * @throws java.io.IOException
      */
     protected Object processPost(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
@@ -166,6 +170,8 @@ public abstract class RestServlet extends HttpServlet {
      * @return Un objeto (java-bean) que será convertido en json y
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
+     * @throws javax.servlet.ServletException
+     * @throws java.io.IOException
      */
     protected Object processPut(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
@@ -186,9 +192,30 @@ public abstract class RestServlet extends HttpServlet {
      * @return Un objeto (java-bean) que será convertido en json y
      * enviado como respuesta de la petición http o {@code null} si se
      * quiere que también se ejecute {@link #processRequest}
+     * @throws javax.servlet.ServletException
+     * @throws java.io.IOException
      */
     protected Object processDelete(RestRequestReader requestReader, RestResponseWriter responseWriter) throws ServletException, IOException {
         return null;
+    }
+    
+    /**
+     * Función que se ejecutará antes de procesar cualquier tipo de petición.
+     * En general, su función es realizar comprobaciones comunes y proteger
+     * rutas.<br><br>
+     * 
+     * Su función normal sería lanzar errores o redireccionar la
+     * petición en caso de que la petición no sea adecuada
+     * 
+     * @param requestReader Un objeto que permite la lectura de
+     * la request
+     * @param responseWriter Un objeto que permite enviar objetos
+     * en forma de json en la response
+     * @return Si la petición debe ser procesada. De ser {@code false}
+     * no se llamará a los métodos de procesamiento
+     */
+    protected boolean beforeProcess(RestRequestReader requestReader, RestResponseWriter responseWriter) {
+        return true;
     }
     
     protected final void doRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -199,6 +226,10 @@ public abstract class RestServlet extends HttpServlet {
             this.getUrlParameters(reader);
 
             Object result = null;
+            
+            if(!beforeProcess(reader, writer)){
+                return;
+            }
 
             switch(reader.getMethod().toUpperCase()) {
                 case "GET":

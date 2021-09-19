@@ -35,7 +35,11 @@ public class JSONHelper {
             try {
                 Field field = bean.getClass().getDeclaredField(fieldName);
                 Method getter = getGetter(field);
-                json.put(fieldName, getter.invoke(bean));
+                Object value = getter.invoke(bean);
+                if(value instanceof IJsonable) {
+                    value = ((IJsonable) value).toJson();
+                }
+                json.put(fieldName, value);
             } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
                 System.err.println("Error creating JSON " + ex.getClass().getSimpleName()
                         + " in field " + fieldName);
@@ -56,6 +60,64 @@ public class JSONHelper {
         JSONArray json = new JSONArray();
         for(Object bean : beans) {
             json.put(createJSON(bean, fieldNames));
+        }
+        return json;
+    }
+    
+    public static JSONObject toJson(Object bean) {
+        if(bean instanceof IJsonable) {
+            return ((IJsonable) bean).toJson();
+        }else {
+            return beanToJson(bean);
+        }
+    }
+    
+    public static JSONArray toJsonArray(Object[] arr) {
+        JSONArray json = new JSONArray();
+        for(Object obj : arr) {
+            if(obj instanceof IJsonable) {
+                 json.put(((IJsonable) obj).toJson());
+            } else if(obj instanceof String || obj instanceof Number
+                    || obj instanceof Boolean || obj instanceof Character) {
+                json.put(obj);
+            } else {
+                json.put(beanToJson(obj));
+            }
+        }
+        return json;
+    }
+    
+    public static JSONArray toJsonArray(Collection col) {
+        JSONArray json = new JSONArray();
+        for(Object obj : col) {
+            if(obj instanceof IJsonable) {
+                 json.put(((IJsonable) obj).toJson());
+            } else if(obj instanceof String || obj instanceof Number
+                    || obj instanceof Boolean || obj instanceof Character) {
+                json.put(obj);
+            } else {
+                json.put(beanToJson(obj));
+            }
+        }
+        return json;
+    }
+    
+    public static JSONObject beanToJson(Object bean) {
+        JSONObject json = new JSONObject();
+        Field[] fields = bean.getClass().getDeclaredFields();
+        for(Field field : fields) {
+            String fieldName = field.getName();
+            try {
+                Method getter = getGetter(field);
+                Object value = getter.invoke(bean);
+                if(value instanceof IJsonable) {
+                    value = ((IJsonable) value).toJson();
+                }
+                json.put(fieldName, value);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+                System.err.println("Error creating JSON " + ex.getClass().getSimpleName()
+                        + " in field " + fieldName);
+            }
         }
         return json;
     }
