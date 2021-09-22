@@ -275,7 +275,7 @@ public abstract class RestServlet extends HttpServlet {
             writer.sendError(ex);
         }catch(Exception ex) {
             ex.printStackTrace(System.err);
-            writer.sendError(new RestException(400, ex.getMessage()));
+            writer.sendError(new RestException(500, ex.getMessage()));
         }
     }
 
