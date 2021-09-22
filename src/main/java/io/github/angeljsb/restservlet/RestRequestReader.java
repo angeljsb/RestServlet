@@ -418,7 +418,7 @@ public class RestRequestReader {
     public JSONArray getArray(String key) {
         this.comproveKey(key);
         String value = this.parameterMap.get(key);
-        return parse(value, JSONArray::new);
+        return parse(value, RestRequestReader::strToJSONArray);
     }
     
     /**
@@ -457,8 +457,17 @@ public class RestRequestReader {
         return getParameterOrDefault(key, def, this::getList);
     }
     
+    private static JSONArray strToJSONArray(String str) {
+        if (str.startsWith("[") && str.endsWith("]")) {
+            return new JSONArray(str);
+        }
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(str);
+        return jsonArray;
+    }
+    
     private static List strToColl(String jsonArray) {
-        JSONArray arr = new JSONArray(jsonArray);
+        JSONArray arr = strToJSONArray(jsonArray);
         ArrayList list = new ArrayList();
         for(int i=0; i<arr.length(); i++) {
             list.add(arr.get(i));
