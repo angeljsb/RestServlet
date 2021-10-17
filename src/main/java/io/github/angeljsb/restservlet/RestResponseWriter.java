@@ -168,7 +168,6 @@ public class RestResponseWriter {
      */
     public void sendError(RestException ex) {
         RestResponseBody body = createRestResponse(ex.getStatusCode(), ex.getMessage());
-        this.httpServletResponse.reset();
         this.httpServletResponse.setStatus(body.getStatus());
         this.send(body);
     }
